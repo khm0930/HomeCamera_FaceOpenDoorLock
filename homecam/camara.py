@@ -12,8 +12,11 @@ from firebase_admin import storage
 from uuid import uuid4
 import subprocess
 import firebase_admin
+from multiprocessing import Process
+
 # 
 PROJECT_ID = "fir-storage-ea381" # Owner Project ID
+camera_process = None  # 카메라 프로세스를 저장할 변수
 
 cred = credentials.Certificate("/home/KHM/HomeCamera_FaceOpenDoorLock/Artifical Intelligence/serviceAccount.json") # Service Key Path
 
@@ -23,6 +26,8 @@ default_app = firebase_admin.initialize_app(cred, {
 bucket = storage.bucket()
 #---------------------파이어베이스 키 접속
 app = Flask(__name__)
+
+
 
 prev_frame = None
 motion_threshold = 220000  # 움직임을 감지하기 위한 임계값 (조절 가능)
@@ -105,23 +110,47 @@ def generate_frames1():
         camera.framerate = 30
         camera.rotation = 180
         raw_capture = picamera.array.PiRGBArray(camera, size=(640, 480))
-        
+         
         for _ in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
             frame = raw_capture.array
             frame = detect_motion(frame)
+            print("1")
             
-            # 나머지 코드는 그대로 유지
+            # raw_capture 객체를 정리하여 카메라 리소스를 해제
+            raw_capture.truncate(0)
+
+def start_camera_process():
+    global camera_process
+    if camera_process is None or not camera_process.is_alive():
+        stop_camera_process()  # 먼저 카메라 프로세스를 중지
+        camera_process = Process(target=generate_frames())
+        camera_process.start()
+
+def start_camera_process1():
+    global camera_process
+    if camera_process is None or not camera_process.is_alive():
+        stop_camera_process()  # 먼저 카메라 프로세스를 중지
+        camera_process = Process(target=generate_frames1())
+        camera_process.start()
+
+def stop_camera_process():
+    global camera_process
+    if camera_process is not None and camera_process.is_alive():
+        camera_process.terminate()
+        camera_process.join()
+        time.sleep(2)  # 충분한 대기 시간 추가
+        
+def stop_camera_process1():
+    global camera_process
+    if camera_process is not None and camera_process.is_alive():
+        camera_process.terminate()
+        camera_process.join()
+        time.sleep(2)  # 충분한 대기 시간 추가
 
 
-@app.route('/')
-def index():
-    return render_template('pi2.html')
 
-@app.route('/video_feed')
-def video_feed():
-    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 if __name__ == '__main__':
-    
-    
-    app.run(host='0.0.0.0', port=9091, debug=True)
+    camera_process = Process(target=generate_frames1)
+    camera_process.start()

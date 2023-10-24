@@ -1,3 +1,7 @@
+from flask import Flask, render_template, send_file
+from firebase_admin import credentials, initialize_app
+from firebase_admin import storage
+import os
 import cv2
 import numpy as np
 import picamera
@@ -14,16 +18,19 @@ from uuid import uuid4
 import schedule
 from datetime import datetime
 
+app = Flask(__name__)
 
 PROJECT_ID = "fir-storage-ea381"
 
-cred = credentials.Certificate("/home/KHM/HomeCamera_FaceOpenDoorLock/Artifical Intelligence/serviceAccount.json") # Service Key Path
-
-default_app = firebase_admin.initialize_app(cred, {
-    'storageBucket': f"{PROJECT_ID}.appspot.com"
+# Firebase 서비스 계정 키를 로드합니다.
+cred = credentials.Certificate("/home/KHM/HomeCamera_FaceOpenDoorLock/Artifical Intelligence/serviceAccount.json")
+firebase_app = initialize_app(cred, {
+    'storageBucket': 'fir-storage-ea381.appspot.com'
 })
-bucket = storage.bucket()
-#---------------------파이어베이스 키 접속
+
+# Firebase Storage 클라이언트를 초기화합니다. 
+bucket  = storage.bucket()
+
 def fileUpload(file):
     blob = bucket.blob('image_store/'+file) #저장한 사진을 파이어베이스 storage의 image_store라는 이름의 디렉토리에 저장
     #new token and metadata 설정
@@ -86,10 +93,11 @@ def measure_distance():
 
 def run_camera():
     with picamera.PiCamera() as camera:
-        camera.resolution = (640, 480)
-        camera.framerate = 30
+        camera.resolution = (320, 240)  # 낮은 해상도
+        camera.framerate = 15  # 낮은 프레임 속도
+
         camera.rotation = 180
-        raw_capture = picamera.array.PiRGBArray(camera, size=(640, 480))
+        raw_capture = picamera.array.PiRGBArray(camera, size=(320, 240))
 
         for _ in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
             frame = raw_capture.array
@@ -120,12 +128,51 @@ def run_camera():
     # 비디오 캡처 종료 후 OpenCV 창 닫기  
     cv2.destroyAllWindows()
 
+# 이미지를 다운로드할 로컬 경로 설정
+download_folder = '/home/KHM/HomeCamera_FaceOpenDoorLock/lock/static/image'
+
+# 이미 다운로드한 파일들을 추적할 집합(set)을 생성
+downloaded_files = set()
+# 이미지 파일 경로 리스트
+IMG_LIST = os.listdir("/home/KHM/HomeCamera_FaceOpenDoorLock/lock/static/image")
+IMG_FOLDER = os.path.join("static", "image")
+app.config["UPLOAD_FOLDER"] = IMG_FOLDER
+IMG_FOLDER = "image"
+
+
+@app.route('/')
+def download_images():
+    # 'train' 폴더에 있는 모든 파일 목록 가져오기
+    IMG_LIST = os.listdir("/home/KHM/HomeCamera_FaceOpenDoorLock/lock/static/image")
+    blobs = bucket.list_blobs(prefix='image_store/lock_captures/')
+
+    for blob in blobs:
+        # 각 파일을 다운로드할 로컬 경로 설정
+        file_name = os.path.basename(blob.name)
+
+        # 이미 다운로드한 파일인지 확인
+        if file_name not in downloaded_files:
+            download_path = os.path.join(download_folder, file_name)
+            print("다운로드 주소:",download_path)
+            # 이미지 다운로드 및 로컬 저장
+            blob.download_to_filename(download_path)
+            downloaded_files.add(file_name)  # 다운로드한 파일을 집합에 추가
+
+            print(f"{file_name} 이미지가 로컬 다운로드 폴더에 저장되었습니다.")
+        else:
+            print(f"{file_name} 이미지는 이미 다운로드되었습니다.")
+
+
+        
+    IMG_LIST = sorted(IMG_LIST, key=lambda x: os.path.getmtime(os.path.join(download_folder, x)), reverse=True)
+    IMG_LIST = [os.path.join(IMG_FOLDER, i) for i in IMG_LIST]
+
+    return render_template('visit.html',image_files=IMG_LIST)
+
 if __name__ == '__main__':
     # 카메라 스레드 시작
     camera_thread = threading.Thread(target=run_camera)
     camera_thread.daemon = True
     camera_thread.start()
+    app.run(host='0.0.0.0', port=9092)  # 포트 번호를 9092로 변경
 
-    # 웹 서버 시작
-    while True:
-        pass
