@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>회원가입</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">
+</head>
+<body>
+    <div class="center-container">
+        <h3>회원가입</h3>
+        <form id="registrationForm">
+            <div class="form-group">
+                <input type="email" id="username" name="username" placeholder="이메일형식으로 작성" required>
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" name="password" placeholder="비밀번호6자리 이상 입력" required>
+            </div>
+            <div class="form-group">
+                <input type="text" id="name" name="name" placeholder="이름" required>
+            </div>
+            <div class="form-group">
+                <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="전화번호" required>
+            </div>
+            <div class="button-container">
+                <button type="button" class="register-button" id="registerButton">회원가입</button>
+                <button type="button" class="face-id-button" onclick="registerFaceID()">FACE ID 등록</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById("registerButton").addEventListener("click", function() {
+            var username = document.getElementById("username").value;
+            var password = document.getElementById("password").value;
+            var name = document.getElementById("name").value;
+            var phoneNumber = document.getElementById("phoneNumber").value;
+            var email = document.getElementById("email").value;
+
+            // 필수 입력 필드 유효성 검사
+            if (!username || !password || !name || !phoneNumber || !email) {
+                alert("모든 필수 입력 필드를 작성하세요.");
+            } else if (password.length < 6) {
+                alert("비밀번호는 6자리 이상이어야 합니다.");
+            } else {
+                // 데이터를 서버로 전송
+                fetch('/register_success', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        username: username,
+                        password: password,
+                        name: name,
+                        phoneNumber: phoneNumber,
+                        email: email
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(function(response) {
+                    // 회원가입 결과를 처리
+                    if (response.status === 200) {
+                        // 회원가입 성공
+                        alert("회원가입이 완료되었습니다.");
+                        window.location.href = '/';
+                    } else {
+                        // 회원가입 실패
+                        alert("회원가입 실패");
+                    }
+                });
+            }
+        });
+    </script>
+    
+</body>
+</html>

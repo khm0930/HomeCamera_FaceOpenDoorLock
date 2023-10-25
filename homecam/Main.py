@@ -18,4 +18,4 @@ app.register_blueprint(registration_bp) #회원가입부분관련 파이썬 코�
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=9091)  # 포트 번호를 9091로 변경
+    app.run(host='0.0.0.0', port=9092)  # 포트 번호를 9091로 변경
