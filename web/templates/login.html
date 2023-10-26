@@ -1,24 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
     <title>로그인</title>
     <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">
 </head>
 <body>
-    <div class="center-container">
-        <h3>HomeCam & DoorLock</h3>
+    <h1>HomeCam & DoorLock</h1>
+    <div class="login-form">
+        <h3>Login</h3>
         <form id="loginForm">
-            <div class="form-group">
-                <input type="text" id="Inusername" name="username" placeholder="아이디" required>
-            </div>
-            <div class="form-group">
-                <input type="password" id="Inpassword" name="password" placeholder="비밀번호" required>
-            </div>
-            <div class="button-container">
-                <button type="button" class="login-button" id="loginbutton">로그인</button>
-                <br>
-                <button type="button" class="register-button" onclick="location.href='/register';">회원가입</button>
-            </div>
+            <input type="text" class="text-field" id="Inusername" name="username" placeholder="아이디" required>
+            <input type="password"class="text-field" id="Inpassword" name="password" placeholder="비밀번호" required>
+            <button type="button" class="login-button" id="loginbutton">로그인</button>
+            <button type="button" class="register-button" onclick="location.href='/register';">회원가입</button>
         </form>
     </div>
 

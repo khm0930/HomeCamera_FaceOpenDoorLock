@@ -2,17 +2,17 @@
 <html>
 <head>
     <title>사용자 정보</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">
 </head>
 <body>
-    <div class="center-container">
+    <h1>HomeCam & DoorLock</h1>
+    <div class="home-form">
         <h3>사용자 정보</h3>
-        <!-- 사용자 정보를 표시하거나 다른 내용을 추가하세요. -->
-        <div>
-            <button>HomeCam</button>
-            <button>DoorLock</button>
-            <button>사용자 정보</button>
-        </div>
+        <form id="home-button">
+            <button type="button" class="home-button" id="Homecam-button">HomeCam</button>
+            <button type="button" class="home-button" id="Doorlock-button">DoorLock</button>
+            <button type="button" class="home-button" id="user-button">User</button>
+        </form>
     </div>
 </body>
 </html>

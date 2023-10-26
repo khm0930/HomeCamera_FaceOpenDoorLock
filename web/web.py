@@ -5,7 +5,7 @@ from firebase_admin import credentials, auth, db
 app = Flask(__name__)
 
 # Firebase 초기화
-cred = credentials.Certificate("/home/KHM/HomeCamera_FaceOpenDoorLock/Artifical Intelligence/serviceAccount.json")
+cred = credentials.Certificate(r"C:\Users\1513\Desktop\학술제3\HomeCamera_FaceOpenDoorLock\service_key\serviceAccount.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://fir-storage-ea381-default-rtdb.firebaseio.com'
 })
