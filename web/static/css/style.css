@@ -2,37 +2,46 @@
     box-sizing: border-box;
     font-family: 'Note Sans KR',sans-serif;
 }
+html{
+    width: 100%;
+    height: 100%;
+}
 body {
     margin: 0;
     background-color: #1d5cd1;
 }
 h1{
+    color: yellow;
     margin-top: 130px;
     text-align: center;
-    color: aliceblue;
     margin-bottom: 60px;
     text-shadow: 8px 8px 10px black;
 }
 h3{
+    font-size: 30px;
+    font-weight: bold;
     text-align: center;
-    color: #1d5cd1;
-}
+    color: yellow;
+    text-shadow: 2px 2px 8px #000000,0px 0px 8px black;
 
+}
 .login-form {
     width: 350px;
-    border: 0;
-    border-radius: 5px;
+    border-radius: 30px;
     background-color: aliceblue;
     padding: 20px;
     margin: 0 auto;
+    border: 3px solid black;
 }
 .register-form {
     width: 350px;
     border: 0;
-    border-radius: 5px;
+    border-radius: 30px;
     background-color: aliceblue;
     padding: 20px;
     margin: 0 auto;
+    border: 3px solid black;
+
 }
 .home-form{
     width: 600px;
@@ -42,6 +51,19 @@ h3{
     background-color: aliceblue;
     padding: 20px;
     margin: 0 auto;
+    border: 3px solid black;
+
+}
+.user-form{
+    width: 800px;
+    height: 600px;
+    border: 0;
+    border-radius: 30px;
+    background-color: aliceblue;
+    padding: 20px;
+    margin: 0 auto;
+    border: 3px solid black;
+
 }
 .text-field{ 
     font-size: 14px;
@@ -51,36 +73,55 @@ h3{
     border-radius: 5px;
     padding: 15px;
 }
+
 .register-button,
 .login-button,.face-id-button,
 button{
-    color: aliceblue;
+    color: yellow;
     background-color: #1d5cd1;
     font-size: 17px;
     margin-bottom: 20px;
     padding: 20px;
-    border: none;
     border-radius: 10px;
     width: 100%;
+    font-style: italic;
+    font-weight: bold;
+    border: 2px solid black;
+
+}
+.home-button{
+    width: 100px;
+    height: 150px;
+    color: yellow;
+    background-color: #1d5cd1;
+    font-size: 18px;
+    padding: 0px;
+    border-radius: 30px;
+    border: 2px solid black;
+    width: 28%;
+    margin-top: 50px;
+    margin-left: 18px;
+    font-style: italic;
+    font-weight: bold;
+}
+.homecam-button{
+    width: 150px;
+    height: 150px;;
+    background-color: #1d5cd1;
+    font-size: 18px;
+    padding: 0px;
+    border-radius: 30px;
+    border: 2px solid black;
+    width: 40%;
+    margin-top: 50px;
+    margin-left: 35px;
+    font-style: italic;
+    font-weight: bold;
 }
 
 .register-button:hover,
-.login-button:hover,.face-id-button:hover,
+.login-button:hover,.face-id-button:hover,.home-button:hover,
 button:hover {
     background-color: #0400ff;
 }
 
-.home-button{
-    width: 100px;
-    height: 80px;
-    color: aliceblue;
-    background-color: #1d5cd1;
-    font-size: 15px;
-    padding: 35px;
-    border-radius: 30px;
-    border: none;
-    width: 28%;
-    margin-top: 70px;
-    margin-left: 18px;
-
-}

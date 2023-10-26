@@ -1,20 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
     <title>회원가입</title>
     <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">
 </head>
 <body>
     <h1>HomeCam & DoorLock</h1>
     <div class="register-form">
-        <h3>회원가입</h3>
+        <h3>REGISTER</h3>
         <form id="registrationForm">
-                <input type="email" class="text-field"id="username" name="username" placeholder="이메일형식으로 작성" required>
-                <input type="password" class="text-field" id="password" name="password" placeholder="비밀번호6자리 이상 입력" required>
-                <input type="text" class="text-field" id="name" name="name" placeholder="이름" required>
-                <input type="tel" class="text-field" id="phoneNumber" name="phoneNumber" placeholder="전화번호" required>
-                <button type="button" class="register-button" id="registerButton">회원가입</button>
-                <button type="button" class="face-id-button" id="faceIdButton">FACE ID 등록</button>
+                <input type="email" class="text-field"id="username" name="username" placeholder="Email" required>
+                <input type="password" class="text-field" id="password" name="password" placeholder="Password (6자리 이상)" required>
+                <input type="text" class="text-field" id="name" name="name" placeholder="Name" required>
+                <input type="tel" class="text-field" id="phoneNumber" name="phoneNumber" placeholder="Phone" required>
+                <button type="button" class="register-button" id="registerButton">Sign Up</button>
+                <button type="button" class="face-id-button" id="faceIdButton">FACE ID</button>
 
             </div>
         </form>

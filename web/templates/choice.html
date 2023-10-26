@@ -1,18 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>사용자 정보</title>
+    <meta charset="utf-8">
+    <title>Home</title>
     <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">
 </head>
+
 <body>
     <h1>HomeCam & DoorLock</h1>
     <div class="home-form">
-        <h3>사용자 정보</h3>
+        <h3>Home</h3>
         <form id="home-button">
-            <button type="button" class="home-button" id="Homecam-button"href="http://220.69.203.14:9097/?action=stream">HomeCam</button>
-            <button type="button" class="home-button" id="Doorlock-button"href="http://220.69.203.14:9092/">DoorLock</button>
-            <button type="button" class="home-button" id="user-button">User</button>
+            <button type="button" class="home-button" id="Homecambutton" onclick="location.href='/homecam';">HomeCam</button>
+            <button type="button" class="home-button" id="Doorlockbutton">DoorLock</button>
+            <button type="button" class="home-button" id="Userbutton" onclick="location.href='/user';">User Information</button>
         </form>
     </div>
+    <script>
+        document.getElementById("Doorlockbutton").addEventListener("click", function () {
+            window.location.href = "http://220.69.203.14:9092/";
+        });
+    </script>
 </body>
+
 </html>

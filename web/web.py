@@ -1,14 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for
 import firebase_admin
 from firebase_admin import credentials, auth, db
-import cv2
-import numpy as np
 import os
 
 app = Flask(__name__)
 
 # Firebase 초기화
-cred = credentials.Certificate("/home/KHM/HomeCamera_FaceOpenDoorLock/Artifical Intelligence/serviceAccount.json")
+cred = credentials.Certificate(r"C:\Users\1513\Desktop\학술제3\HomeCamera_FaceOpenDoorLock\service_key\serviceAccount.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://fir-storage-ea381-default-rtdb.firebaseio.com'
 })
@@ -20,6 +18,14 @@ def index():
 @app.route('/register')
 def register_index():
     return render_template('register.html')
+
+@app.route('/homecam')
+def homacam_index():
+    return render_template('homecam.html')
+
+@app.route('/user')
+def user_index():
+    return render_template('user.html')
 
 @app.route('/register_success', methods=['POST', 'GET'])
 def register():
@@ -146,4 +152,4 @@ def choice():
     return render_template('choice.html')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=9092)
+    app.run(host='0.0.0.0', port=5000)
