@@ -15,6 +15,8 @@
                 <input type="tel" class="text-field" id="phoneNumber" name="phoneNumber" placeholder="전화번호" required>
                 <button type="button" class="register-button" id="registerButton">회원가입</button>
                 <button type="button" class="face-id-button" id="faceIdButton">FACE ID 등록</button>
+
+            </div>
         </form>
     </div>
 
@@ -56,6 +58,12 @@
                 });
             }
         });
+    
+    document.getElementById("faceIdButton").addEventListener("click", function() {
+        // FACE ID 등록 버튼이 클릭되면 "faceid" 페이지로 리디렉션
+        window.location.href = '/faceid';
+    });
+
     </script>
     
 </body>
