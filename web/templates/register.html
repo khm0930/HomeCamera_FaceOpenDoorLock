@@ -22,7 +22,8 @@
             </div>
             <div class="button-container">
                 <button type="button" class="register-button" id="registerButton">회원가입</button>
-                <button type="button" class="face-id-button" onclick="registerFaceID()">FACE ID 등록</button>
+                <button type="button" class="face-id-button" id="faceIdButton">FACE ID 등록</button>
+
             </div>
         </form>
     </div>
@@ -33,10 +34,9 @@
             var password = document.getElementById("password").value;
             var name = document.getElementById("name").value;
             var phoneNumber = document.getElementById("phoneNumber").value;
-            var email = document.getElementById("email").value;
 
             // 필수 입력 필드 유효성 검사
-            if (!username || !password || !name || !phoneNumber || !email) {
+            if (!username || !password || !name || !phoneNumber) {
                 alert("모든 필수 입력 필드를 작성하세요.");
             } else if (password.length < 6) {
                 alert("비밀번호는 6자리 이상이어야 합니다.");
@@ -49,7 +49,7 @@
                         password: password,
                         name: name,
                         phoneNumber: phoneNumber,
-                        email: email
+                      
                     }),
                     headers: {
                         'Content-Type': 'application/json'
@@ -67,6 +67,12 @@
                 });
             }
         });
+    
+    document.getElementById("faceIdButton").addEventListener("click", function() {
+        // FACE ID 등록 버튼이 클릭되면 "faceid" 페이지로 리디렉션
+        window.location.href = '/faceid';
+    });
+
     </script>
     
 </body>
