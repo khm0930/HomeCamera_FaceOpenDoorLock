@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>User Information</title>
+</head>
+<body>
+    <h1>HomeCam & DoorLock</h1>
+    <div class="user-form">
+        <h3>User Information</h3>
+        <ul>
+            <li><strong>UID:</strong> {{ user_data.uid }}</li>
+            <li><strong>ID:</strong> {{ user_data.email }}</li>
+            <li><strong>Name:</strong> {{ user_data.name }}</li>
+            <li><strong>Created At:</strong> {{ user_data.created_at }}</li>  <!-- 사용자 생성 날짜 추가 -->
+            <!-- 필요한 다른 사용자 정보도 여기에 추가 가능합니다. -->
+        </ul>
+    </div>
+</body>
+</html>

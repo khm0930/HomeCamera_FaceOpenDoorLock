@@ -10,13 +10,12 @@
     <div class="login-form">
         <h3>Login</h3>
         <form id="loginForm">
-            <input type="text" class="text-field" id="Inusername" name="username" placeholder="아이디" required>
-            <input type="password"class="text-field" id="Inpassword" name="password" placeholder="비밀번호" required>
-            <button type="button" class="login-button" id="loginbutton">로그인</button>
-            <button type="button" class="register-button" onclick="location.href='/register';">회원가입</button>
+            <input type="text" class="text-field" id="Inusername" name="username" placeholder="Email" required>
+            <input type="password"class="text-field" id="Inpassword" name="password" placeholder="Password" required>
+            <button type="button" class="login-button" id="loginbutton">Sign In</button>
+            <button type="button" class="register-button" onclick="location.href='/register';">Sign Up</button>
         </form>
     </div>
-
     <!-- Include the Firebase JavaScript SDK as a module -->
     <script type="module">
         // Import the functions you need from the SDKs you need
@@ -49,8 +48,29 @@
                     // 로그인 성공 시 동작
                     const user = userCredential.user;
                     alert("로그인에 성공했습니다.");
-                    // 원하는 페이지로 리디렉션
-                    window.location.href = '/choice';
+                            // 로그인 정보를 서버로 전송 (POST 요청)
+                    const userData = {
+                        email: user.email,
+                        uid: user.uid
+                    };
+
+                    fetch('/login', {
+                        method: 'POST',
+                        body: JSON.stringify(userData),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // 서버로부터의 응답 처리
+                        if (data.success) {
+                            // 원하는 페이지로 리디렉션
+                            window.location.href = '/choice';
+                        } else {
+                            alert(data.message);
+                        }
+                    });
                 })
                 .catch((error) => {
                     // 로그인 실패 시 에러 메시지 출력
