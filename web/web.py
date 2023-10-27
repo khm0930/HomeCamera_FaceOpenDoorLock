@@ -1,8 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for,jsonify,session
 import firebase_admin
 from firebase_admin import credentials, auth, db
-import cv2
-import numpy as np
 import os
 from datetime import datetime
 
@@ -14,7 +12,11 @@ app.secret_key = 'your_secret_key'  # 비밀 키 설정
 
 
 # Firebase 초기화
+<<<<<<< HEAD
 cred = credentials.Certificate('/home/KHM/HomeCamera_FaceOpenDoorLock/service_key/serviceAccount.json')
+=======
+cred = credentials.Certificate(r"C:\Users\1513\Desktop\학술제3\HomeCamera_FaceOpenDoorLock\service_key\serviceAccount.json")
+>>>>>>> fb4394db84418b0793b59ba598ffa4559cb42b79
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://fir-storage-ea381-default-rtdb.firebaseio.com'
 })
@@ -31,6 +33,7 @@ def register_index():
 def homacam_index():
     return render_template('homecam.html')
 
+<<<<<<< HEAD
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -81,6 +84,11 @@ def user_index():
 
 
     
+=======
+@app.route('/user')
+def user_index():
+    return render_template('user.html')
+>>>>>>> fb4394db84418b0793b59ba598ffa4559cb42b79
 
 @app.route('/register_success', methods=['POST', 'GET'])
 def register():
@@ -226,4 +234,8 @@ def choice():
     return render_template('choice.html')
 
 if __name__ == '__main__':
+<<<<<<< HEAD
     app.run(host='0.0.0.0', port=9092)
+=======
+    app.run(host='0.0.0.0', port=5000)
+>>>>>>> fb4394db84418b0793b59ba598ffa4559cb42b79

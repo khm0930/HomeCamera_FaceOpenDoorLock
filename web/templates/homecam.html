@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">
+    <title>HomeCam</title>
+</head>
+<body>
+    <h1>HomeCam & DoorLock</h1>
+    <div class="home-form">
+        <h3>HomeCam</h3>
+        <form id="homecamfrom">
+            <button type="button" class="homecam-button" id="warningMessge">Warning Message</button>
+            <button type="button" class="homecam-button" id=streamButton>CCTV</button>
+        </form>
+    </div>
+    <script>
+        document.getElementById("streamButton").addEventListener("click", function () {
+            window.location.href = "http://220.69.203.14:9090/?action=stream";
+        });
+    </script>
+</body>
+</html>

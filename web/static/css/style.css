@@ -118,9 +118,19 @@ button{
     font-style: italic;
     font-weight: bold;
 }
+<<<<<<< HEAD
 
 .register-button:hover,
 .login-button:hover,.face-id-button:hover,.home-button:hover,
 button:hover {
     background-color: #0400ff;
 }
+=======
+
+.register-button:hover,
+.login-button:hover,.face-id-button:hover,.home-button:hover,
+button:hover {
+    background-color: #0400ff;
+}
+
+>>>>>>> fb4394db84418b0793b59ba598ffa4559cb42b79
