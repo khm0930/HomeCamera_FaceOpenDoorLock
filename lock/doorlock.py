@@ -138,8 +138,9 @@ def run_camera():
                     upload_image_to_firebase(face_image_path, remote_path)
 
                     bw_image_path = process_and_save_image(capture_file_path)  # 블랙으로 바꾸고 얼굴 검출
-                    remote_path = f'image_store/lock_blackcaptures/{capture_time}.jpg'  # Firebase Cloud Storage에 업로드될 경로 및 파일 이름
-                    upload_image_to_firebase(bw_image_path, remote_path)
+                    if bw_image_path:  # 얼굴 검출이 실패하지 않았을 때만 서버로 전송
+                        remote_path = f'image_store/lock_blackcaptures/{capture_time}.jpg'  # Firebase Cloud Storage에 업로드될 경로 및 파일 이름
+                        upload_image_to_firebase(bw_image_path, remote_path)
 
 
             # OpenCV 창에 비디오 스트림 표시
