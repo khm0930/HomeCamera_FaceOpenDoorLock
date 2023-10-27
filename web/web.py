@@ -31,11 +31,6 @@ def register_index():
 def homacam_index():
     return render_template('homecam.html')
 
-@app.route('/user')
-def user_index():
-    return render_template('user.html')
-
-
 
 @app.route('/login', methods=['POST'])
 def login():
