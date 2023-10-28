@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_file
+from flask import Flask, render_template, send_file, request
 from firebase_admin import credentials, initialize_app
 from firebase_admin import storage
 import os
@@ -63,12 +63,14 @@ def upload_image_to_firebase(image_path, remote_path):
 TRIG_PIN = 14
 ECHO_PIN = 15
 SERVO_PIN= 18
+BUZZER_PIN=4
 
 GPIO.setwarnings(False)  # 이 부분에서 경고를 비활성화합니다.
 # GPIO 핀 모드 설정
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(TRIG_PIN, GPIO.OUT)
 GPIO.setup(ECHO_PIN, GPIO.IN)
+GPIO.setup(BUZZER_PIN, GPIO.OUT)
 
 prev_frame = None
 min_area = 1000  # 윤곽선을 감지하기 위한 최소 영역 크기 (조절 가능)
@@ -127,6 +129,57 @@ def control_servo():
     except Exception as e:
         return f'에러 발생: {e}'
 
+
+def buzz_open_door():
+    try:
+        P = GPIO.PWM(BUZZER_PIN, 300)  # BUZZER_PIN 핀에 PWM 객체 생성 (주파수: 300Hz)
+        P.start(50)  # 50% 듀티 사이클로 시작
+
+        duration = 0.2  # 소리가 유지되는 시간 (초 단위)
+        print("도 소리")
+        P.ChangeFrequency(1046)  # 도 소리 (1046Hz)
+        time.sleep(duration)
+
+        print("미 소리")
+        P.ChangeFrequency(1318)  # 미 소리 (1318Hz)
+        time.sleep(duration)
+
+        print("솔 소리")
+        P.ChangeFrequency(1567)  # 솔 소리 (1567Hz)
+        time.sleep(duration)
+
+        P.stop()  # PWM 중단
+
+        return '문이 열리는 소리와 같은 음을 울림'
+
+    except Exception as e:
+        return f'에러 발생: {e}'
+    
+def buzz_close_door():
+    try:
+        P = GPIO.PWM(BUZZER_PIN, 300)  # BUZZER_PIN 핀에 PWM 객체 생성 (주파수: 300Hz)
+        P.start(50)  # 50% 듀티 사이클로 시작
+
+        duration = 0.2  # 소리가 유지되는 시간 (초 단위)
+        print("솔 소리")
+        P.ChangeFrequency(1567)  # 솔 소리 (1567Hz)
+        time.sleep(duration)
+
+        print("미 소리")
+        P.ChangeFrequency(1318)  # 미 소리 (1318Hz)
+        time.sleep(duration)
+
+        print("도 소리")
+        P.ChangeFrequency(1046)  # 도 소리 (1046Hz)
+        time.sleep(duration)
+
+        P.stop()  # PWM 중단
+
+        return '문이 열리는 소리와 같은 음을 울림'
+
+    except Exception as e:
+        return f'에러 발생: {e}'
+
 def run_camera():
     with picamera.PiCamera() as camera:
         camera.resolution = (640, 480)  # 낮은 해상도
@@ -143,13 +196,12 @@ def run_camera():
             distance = measure_distance()
 
              # 거리가 15cm 미만이고 모션 감지된 경우 사진 캡처
-            if distance < 5 :
+            if distance < 5:
                 capture_time = datetime.now().strftime("%Y%m%d%H%M%S")  # 현재 날짜와 시간을 문자열로 포맷팅
                 capture_file_path = os.path.join(capture_directory, f'{capture_time}.jpg')
                 cv2.imwrite(capture_file_path, frame)
                 time.sleep(capture_interval)
                 face_image_path = detect_faces(capture_file_path)
-
                 if face_image_path:  # 얼굴 검출이 제대로 되었을 때만 처리
                     remote_path = f'image_store/lock_captures/{capture_time}.jpg'
                     upload_image_to_firebase(face_image_path, remote_path)
@@ -247,7 +299,7 @@ def send_bw_image_to_server2(image_path):
         files = {'image': (image_path, image_file)}
 
         # RESTful API 엔드포인트 및 데이터 설정
-        api_url = 'http://192.168.1.7:9097/receive_image'
+        api_url = 'http://192.168.1.7:9099/receive_image'
         payload = {'description': '흑백 이미지 설명'}
         
         # RESTful POST 요청 보내기
@@ -260,6 +312,28 @@ def send_bw_image_to_server2(image_path):
 
     # 이미지 파일을 명시적으로 닫습니다.
     image_file.close()
+
+number_directory = 'face_test_result'
+os.makedirs(number_directory, exist_ok=True)
+
+@app.route('/face_test_result', methods=['POST'])
+def receive_number():
+    # POST 요청에서 JSON 형식의 데이터 가져오기
+    data = request.get_json()
+    # JSON에서 'number' 키의 값 추출
+    number = data.get('number')
+    # 숫자를 터미널에 출력
+    print("받은 숫자는:", number)
+
+    if number is not None:
+        # 숫자를 터미널에 출력
+        print("받은 숫자는:", number)
+
+        # 숫자 처리 또는 분석을 여기에서 수행할 수 있습니다.
+
+        return '숫자를 성공적으로 받았습니다.'
+    else:
+        return '숫자를 받지 못했습니다. 올바른 데이터를 전송해주세요.', 400
 
 # 이미지를 다운로드할 로컬 경로 설정
 download_folder = '/home/KHM/HomeCamera_FaceOpenDoorLock/lock/static/image'
