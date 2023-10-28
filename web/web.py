@@ -18,7 +18,7 @@ app.secret_key = 'your_secret_key'  # 비밀 키 설정
 
 # Firebase 초기화
 
-cred = credentials.Certificate("C:\\Users\\kj100\\OneDrive\\바탕 화면\\HomeCamera_FaceOpenDoorLock\\HomeCamera_FaceOpenDoorLock\\service_key\\serviceAccount.json")
+cred = credentials.Certificate("servicekey/serviceAccount.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://fir-storage-ea381-default-rtdb.firebaseio.com'
 })
@@ -216,10 +216,25 @@ def train_face():
     except Exception as e:
         return f'학습 도중 오류가 발생했습니다: {str(e)}'
 
-@app.route('/train_complete')
-def train_complete():
-    return render_template('train_complete.html')
+image_directory = 'test_images'
+os.makedirs(image_directory, exist_ok=True)
+# 이미지를 받을 엔드포인트 및 핸들러 함수 정의
+@app.route('/receive_image', methods=['POST'])
+def receive_image():
+    # POST 요청에서 이미지 데이터 가져오기
+    image_data = request.files['image']
+    current_time = datetime.now().strftime('%Y%m%d%H%M%S')
+    image_filename = f'received_image_{current_time}.jpg'
 
+    # 이미지를 파일로 저장
+    image_path = os.path.join(image_directory, image_filename)
+    image_data.save(image_path)
+
+    print("이미지를 받아 저장했습니다:", image_path)
+
+    # 이미지 처리 또는 분석을 여기에서 수행할 수 있습니다.
+
+    return '이미지를 성공적으로 받았습니다.'
 
 @app.route('/choice')
 def choice():
@@ -231,4 +246,4 @@ def face():
 
 if __name__ == '__main__':
 
-    app.run(host='0.0.0.0', port=5123)
+    app.run(host='0.0.0.0', port=9092)
