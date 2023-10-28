@@ -18,7 +18,8 @@ from uuid import uuid4
 import schedule
 from datetime import datetime
 import requests
-
+import pigpio
+from time import sleep
 
 
 app = Flask(__name__)
@@ -31,6 +32,7 @@ cred = credentials.Certificate("/home/KHM/HomeCamera_FaceOpenDoorLock/Artifical 
 firebase_app = initialize_app(cred, {
     'storageBucket': 'fir-storage-ea381.appspot.com'
 })
+
 
 # Firebase Storage 클라이언트를 초기화합니다. 
 bucket  = storage.bucket()
@@ -60,7 +62,9 @@ def upload_image_to_firebase(image_path, remote_path):
 # GPIO 핀 번호 설정
 TRIG_PIN = 14
 ECHO_PIN = 15
+SERVO_PIN= 18
 
+GPIO.setwarnings(False)  # 이 부분에서 경고를 비활성화합니다.
 # GPIO 핀 모드 설정
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(TRIG_PIN, GPIO.OUT)
@@ -106,16 +110,30 @@ def measure_distance():
     distance = (elapsed_time * 34300) / 2  # 거리(cm) 계산
     return distance
 
+pi = pigpio.pi()
+pi.set_mode(SERVO_PIN, pigpio.OUTPUT)  # SERVO_PIN을 출력 모드로 설정
+def control_servo():
+    try:
+        # 수직(90도)으로 회전
+        pi.set_servo_pulsewidth(SERVO_PIN, 1500)  # 90도 (수직)로 이동
+        sleep(3)  # 3초 대기
 
+        # 수평(0도)으로 다시 회전
+        pi.set_servo_pulsewidth(SERVO_PIN,600)  # 모터를 수평으로 일자로 되돌리기
+        sleep(1)  # 3초 대기
 
+        return '서보 모터 제어 완료'
+
+    except Exception as e:
+        return f'에러 발생: {e}'
 
 def run_camera():
     with picamera.PiCamera() as camera:
-        camera.resolution = (320, 240)  # 낮은 해상도
+        camera.resolution = (640, 480)  # 낮은 해상도
         camera.framerate = 15  # 낮은 프레임 속도
 
         camera.rotation = 180
-        raw_capture = picamera.array.PiRGBArray(camera, size=(320, 240))
+        raw_capture = picamera.array.PiRGBArray(camera, size=(640, 480))
 
         for _ in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
             frame = raw_capture.array
@@ -123,7 +141,6 @@ def run_camera():
 
 
             distance = measure_distance()
-
 
              # 거리가 15cm 미만이고 모션 감지된 경우 사진 캡처
             if distance < 5 :
@@ -164,7 +181,7 @@ def detect_faces(image_path):
     image = cv2.imread(image_path)
     
     # 얼굴 검출
-    faces = face_cascade2.detectMultiScale(image, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+    faces = face_cascade2.detectMultiScale(image, scaleFactor=1.1, minNeighbors=5, minSize=(150,150))
     
     # output_path 변수 초기화
     output_path = None
@@ -195,7 +212,7 @@ def process_and_save_image(image_path):
     grayscale_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     
     # 얼굴 검출
-    faces = face_cascade.detectMultiScale(grayscale_image, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+    faces = face_cascade.detectMultiScale(grayscale_image, scaleFactor=1.1, minNeighbors=5, minSize=(150,150))
     
     # output_path 변수 초기화
     output_path = None
@@ -220,16 +237,17 @@ def process_and_save_image(image_path):
             cv2.imwrite(output_path, grayscale_face)
 
             send_bw_image_to_server2(output_path)
+            control_servo()  # 모터 동작 함수 호출
     
     return output_path
-
+  
 
 def send_bw_image_to_server2(image_path):
     with open(image_path, 'rb') as image_file:
         files = {'image': (image_path, image_file)}
 
         # RESTful API 엔드포인트 및 데이터 설정
-        api_url = 'http://192.168.1.5:9097/receive_image'
+        api_url = 'http://192.168.1.7:9097/receive_image'
         payload = {'description': '흑백 이미지 설명'}
         
         # RESTful POST 요청 보내기
