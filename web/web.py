@@ -231,25 +231,5 @@ def face():
     return render_template('faceid.html')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5123)
 
-
-# image_directory = 'test_images'
-# os.makedirs(image_directory, exist_ok=True)
-# # 이미지를 받을 엔드포인트 및 핸들러 함수 정의
-# @app.route('/receive_image', methods=['POST'])
-# def receive_image():
-#     # POST 요청에서 이미지 데이터 가져오기
-#     image_data = request.files['image']
-#     current_time = datetime.now().strftime('%Y%m%d%H%M%S')
-#     image_filename = f'received_image_{current_time}.jpg'
-
-#     # 이미지를 파일로 저장
-#     image_path = os.path.join(image_directory, image_filename)
-#     image_data.save(image_path)
-
-#     print("이미지를 받아 저장했습니다:", image_path)
-
-#     # 이미지 처리 또는 분석을 여기에서 수행할 수 있습니다.
-
-#     return '이미지를 성공적으로 받았습니다.'
+    app.run(host='0.0.0.0', port=9092)
