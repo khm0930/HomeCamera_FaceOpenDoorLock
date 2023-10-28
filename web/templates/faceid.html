@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>얼굴 학습 시작</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>얼굴 학습 시작</h1>
+    <p>아래 버튼을 눌러 얼굴 학습을 시작하세요.</p>
+
+    <!-- 학습 시작 버튼 -->
+    <button id="startTraining">학습 시작</button>
+
+    <script>
+        $('#startTraining').on('click', function() {
+            fetch('/faceid', {
+                method: 'POST',
+            }).then(function(response) {
+                if (!response.ok) {
+                    throw new Error("사진을 다시 찍어주세요 " + response.status);
+                }
+                return response.json();
+            }).then(function(responseJson) {
+                alert(responseJson.message);
+                window.location.href = '/register';   // 서버에서 받은 메시지를 alert로 표시합니다.
+            }).catch(function(error) {
+                alert("에러: " + error.message);
+            });
+        });
+
+        
+    </script>
+</body>
+</html>
