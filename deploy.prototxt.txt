@@ -5,7 +5,6 @@ input_shape {
   dim: 300
   dim: 300
 }
-
 layer {
   name: "data_bn"
   type: "BatchNorm"
