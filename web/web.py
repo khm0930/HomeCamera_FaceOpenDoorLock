@@ -138,7 +138,6 @@ os.makedirs('train', exist_ok=True)
 
 # 얼굴 이미지를 저장할 디렉토리 설정
 TRAIN_IMAGE_DIR = 'train'  # 이미지를 저장할 디렉토리
-
 # 얼굴 이미지 학습
 @app.route('/faceid', methods=['POST'])
 def train_face():
@@ -232,4 +231,4 @@ def face():
 
 if __name__ == '__main__':
 
-    app.run(host='0.0.0.0', port=9092)
+    app.run(host='0.0.0.0', port=5123)
