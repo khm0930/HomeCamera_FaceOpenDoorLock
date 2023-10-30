@@ -278,21 +278,17 @@ def detect_faces(image_path):
     # output_path 변수 초기화
     output_path = None
     
-    if len(faces) == 0:
-        # 얼굴이 검출되지 않은 경우에는 output_path를 초기화하고 아무 작업도 수행하지 않습니다.
-        pass
-    else:
-        for i, (x, y, w, h) in enumerate(faces):
-            # 원본 이미지에서 얼굴 부분 추출
-            face = image[y:y+h, x:x+w]
-            
-            # 새로운 파일 이름 생성
-            current_time = datetime.now().strftime("%Y%m%d%H%M%S")
-            new_filename = f"{current_time}{i}.jpg"
-            
-            # 얼굴 이미지 저장
-            output_path = os.path.join(output_directory, new_filename)
-            cv2.imwrite(output_path, face)
+    for i, (x, y, w, h) in enumerate(faces):
+        # 원본 이미지에서 얼굴 부분 추출
+        face = image[y:y+h, x:x+w]
+        
+        # 새로운 파일 이름 생성
+        current_time = datetime.now().strftime("%Y%m%d%H%M%S")
+        new_filename = f"{current_time}{i}.jpg"
+        
+        # 얼굴 이미지 저장
+        output_path = os.path.join(output_directory, new_filename)
+        cv2.imwrite(output_path, face)
 
     return output_path
 
@@ -334,6 +330,7 @@ def process_and_save_image(image_path):
     
     return output_path
   
+
 
 def send_bw_image_to_server2(image_path):
     with open(image_path, 'rb') as image_file:
@@ -431,4 +428,3 @@ if __name__ == '__main__':
     camera_thread.daemon = True
     camera_thread.start()
     app.run(host='0.0.0.0', port=9092)
-

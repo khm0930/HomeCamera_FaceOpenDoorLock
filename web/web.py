@@ -25,19 +25,32 @@ firebase_admin.initialize_app(cred, {
 
 @app.route('/')
 def index():
-    return render_template('login.html')
+    return render_template('start.html')
 
 @app.route('/register',methods=['POST', 'GET'])
 def register_index():
     return render_template('register.html')
 
+@app.route('/login')
+def logout_index():
+    return render_template('login.html')
+
 @app.route('/homecam')
 def homacam_index():
+    return render_template('homecam.html')
+
+@app.route('/choice')
+def homeback_index():
+    return render_template('choice.html')
+
+@app.route('/homecam')
+def homacamback_index():
     return render_template('homecam.html')
 
 @app.route('/faceid')
 def faceid_index():
     return render_template('faceid.html')
+
 
 @app.route('/faceid.html')
 def faceid_html():
@@ -245,5 +258,6 @@ def face():
     return render_template('faceid.html')
 
 if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=3000)
 
-    app.run(host='0.0.0.0', port=9092)
+
