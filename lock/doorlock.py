@@ -136,15 +136,14 @@ def buzz_open_door():
         P.start(50)  # 50% 듀티 사이클로 시작
 
         duration = 0.2  # 소리가 유지되는 시간 (초 단위)
-        print("도 소리")
+        print("문열림")
         P.ChangeFrequency(1046)  # 도 소리 (1046Hz)
         time.sleep(duration)
 
-        print("미 소리")
         P.ChangeFrequency(1318)  # 미 소리 (1318Hz)
         time.sleep(duration)
 
-        print("솔 소리")
+
         P.ChangeFrequency(1567)  # 솔 소리 (1567Hz)
         time.sleep(duration)
 
@@ -161,15 +160,15 @@ def buzz_close_door():
         P.start(50)  # 50% 듀티 사이클로 시작
 
         duration = 0.2  # 소리가 유지되는 시간 (초 단위)
-        print("솔 소리")
+        print("문닫힘")
         P.ChangeFrequency(1567)  # 솔 소리 (1567Hz)
         time.sleep(duration)
 
-        print("미 소리")
+  
         P.ChangeFrequency(1318)  # 미 소리 (1318Hz)
         time.sleep(duration)
 
-        print("도 소리")
+ 
         P.ChangeFrequency(1046)  # 도 소리 (1046Hz)
         time.sleep(duration)
 
@@ -185,11 +184,10 @@ def buzz_fail_door():
         P.start(50)  # 50% 듀티 사이클로 시작
 
         duration = 0.4  # 소리가 유지되는 시간 (초 단위)
-        print("솔 소리")
+        print("얼굴 인식 실패 소리")
         P.ChangeFrequency(2000)  # 솔 소리 (1567Hz)
         time.sleep(duration)
 
-        print("솔 소리")
         P.ChangeFrequency(2000)  # 미 소리 (1318Hz)
         time.sleep(duration)
 
@@ -367,11 +365,13 @@ def receive_number():
         # 숫자를 터미널에 출력
         print("받은 숫자는:", number)
 
-        if number > 10:
+        if number > 20:
+            print("얼굴인식 성공")
             buzz_open_door()
             control_servo()
             buzz_close_door()
         else:
+            print("얼굴인식 실패")
             buzz_fail_door()
 
 
