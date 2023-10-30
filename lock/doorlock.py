@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_file
+from flask import Flask, render_template, send_file, request
 from firebase_admin import credentials, initialize_app
 from firebase_admin import storage
 import os
@@ -18,7 +18,8 @@ from uuid import uuid4
 import schedule
 from datetime import datetime
 import requests
-
+import pigpio
+from time import sleep
 
 
 app = Flask(__name__)
@@ -31,6 +32,7 @@ cred = credentials.Certificate("/home/KHM/HomeCamera_FaceOpenDoorLock/Artifical 
 firebase_app = initialize_app(cred, {
     'storageBucket': 'fir-storage-ea381.appspot.com'
 })
+
 
 # Firebase Storage 클라이언트를 초기화합니다. 
 bucket  = storage.bucket()
@@ -60,11 +62,15 @@ def upload_image_to_firebase(image_path, remote_path):
 # GPIO 핀 번호 설정
 TRIG_PIN = 14
 ECHO_PIN = 15
+SERVO_PIN= 18
+BUZZER_PIN=4
 
+GPIO.setwarnings(False)  # 이 부분에서 경고를 비활성화합니다.
 # GPIO 핀 모드 설정
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(TRIG_PIN, GPIO.OUT)
 GPIO.setup(ECHO_PIN, GPIO.IN)
+GPIO.setup(BUZZER_PIN, GPIO.OUT)
 
 prev_frame = None
 min_area = 1000  # 윤곽선을 감지하기 위한 최소 영역 크기 (조절 가능)
@@ -106,16 +112,81 @@ def measure_distance():
     distance = (elapsed_time * 34300) / 2  # 거리(cm) 계산
     return distance
 
+pi = pigpio.pi()
+pi.set_mode(SERVO_PIN, pigpio.OUTPUT)  # SERVO_PIN을 출력 모드로 설정
+def control_servo():
+    try:
+        # 수직(90도)으로 회전
+        pi.set_servo_pulsewidth(SERVO_PIN, 1500)  # 90도 (수직)로 이동
+        sleep(3)  # 3초 대기
+
+        # 수평(0도)으로 다시 회전
+        pi.set_servo_pulsewidth(SERVO_PIN,600)  # 모터를 수평으로 일자로 되돌리기
+        sleep(1)  # 3초 대기
+
+        return '서보 모터 제어 완료'
+
+    except Exception as e:
+        return f'에러 발생: {e}'
 
 
+def buzz_open_door():
+    try:
+        P = GPIO.PWM(BUZZER_PIN, 300)  # BUZZER_PIN 핀에 PWM 객체 생성 (주파수: 300Hz)
+        P.start(50)  # 50% 듀티 사이클로 시작
+
+        duration = 0.2  # 소리가 유지되는 시간 (초 단위)
+        print("도 소리")
+        P.ChangeFrequency(1046)  # 도 소리 (1046Hz)
+        time.sleep(duration)
+
+        print("미 소리")
+        P.ChangeFrequency(1318)  # 미 소리 (1318Hz)
+        time.sleep(duration)
+
+        print("솔 소리")
+        P.ChangeFrequency(1567)  # 솔 소리 (1567Hz)
+        time.sleep(duration)
+
+        P.stop()  # PWM 중단
+
+        return '문이 열리는 소리와 같은 음을 울림'
+
+    except Exception as e:
+        return f'에러 발생: {e}'
+    
+def buzz_close_door():
+    try:
+        P = GPIO.PWM(BUZZER_PIN, 300)  # BUZZER_PIN 핀에 PWM 객체 생성 (주파수: 300Hz)
+        P.start(50)  # 50% 듀티 사이클로 시작
+
+        duration = 0.2  # 소리가 유지되는 시간 (초 단위)
+        print("솔 소리")
+        P.ChangeFrequency(1567)  # 솔 소리 (1567Hz)
+        time.sleep(duration)
+
+        print("미 소리")
+        P.ChangeFrequency(1318)  # 미 소리 (1318Hz)
+        time.sleep(duration)
+
+        print("도 소리")
+        P.ChangeFrequency(1046)  # 도 소리 (1046Hz)
+        time.sleep(duration)
+
+        P.stop()  # PWM 중단
+
+        return '문이 열리는 소리와 같은 음을 울림'
+
+    except Exception as e:
+        return f'에러 발생: {e}'
 
 def run_camera():
     with picamera.PiCamera() as camera:
-        camera.resolution = (320, 240)  # 낮은 해상도
+        camera.resolution = (640, 480)  # 낮은 해상도
         camera.framerate = 15  # 낮은 프레임 속도
 
         camera.rotation = 180
-        raw_capture = picamera.array.PiRGBArray(camera, size=(320, 240))
+        raw_capture = picamera.array.PiRGBArray(camera, size=(640, 480))
 
         for _ in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
             frame = raw_capture.array
@@ -124,18 +195,16 @@ def run_camera():
 
             distance = measure_distance()
 
-
              # 거리가 15cm 미만이고 모션 감지된 경우 사진 캡처
-            if distance < 5 :
+            if distance < 5:
                 capture_time = datetime.now().strftime("%Y%m%d%H%M%S")  # 현재 날짜와 시간을 문자열로 포맷팅
                 capture_file_path = os.path.join(capture_directory, f'{capture_time}.jpg')
                 cv2.imwrite(capture_file_path, frame)
                 time.sleep(capture_interval)
-                face_image_path = detect_faces(capture_file_path)
 
-                if face_image_path:  # 얼굴 검출이 제대로 되었을 때만 처리
-                    remote_path = f'image_store/lock_captures/{capture_time}.jpg'
-                    upload_image_to_firebase(face_image_path, remote_path)
+                face_image_path=detect_faces(capture_file_path)
+                remote_path = f'image_store/lock_captures/{capture_time}.jpg'
+                upload_image_to_firebase(face_image_path,remote_path)
 
                     bw_image_path = process_and_save_image(capture_file_path)  # 블랙으로 바꾸고 얼굴 검출
                     if bw_image_path:  # 얼굴 검출이 실패하지 않았을 때만 서버로 전송
@@ -164,26 +233,22 @@ def detect_faces(image_path):
     image = cv2.imread(image_path)
     
     # 얼굴 검출
-    faces = face_cascade2.detectMultiScale(image, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+    faces = face_cascade2.detectMultiScale(image, scaleFactor=1.1, minNeighbors=5, minSize=(150,150))
     
     # output_path 변수 초기화
     output_path = None
     
-    if len(faces) == 0:
-        # 얼굴이 검출되지 않은 경우에는 output_path를 초기화하고 아무 작업도 수행하지 않습니다.
-        pass
-    else:
-        for i, (x, y, w, h) in enumerate(faces):
-            # 원본 이미지에서 얼굴 부분 추출
-            face = image[y:y+h, x:x+w]
-            
-            # 새로운 파일 이름 생성
-            current_time = datetime.now().strftime("%Y%m%d%H%M%S")
-            new_filename = f"{current_time}{i}.jpg"
-            
-            # 얼굴 이미지 저장
-            output_path = os.path.join(output_directory, new_filename)
-            cv2.imwrite(output_path, face)
+    for i, (x, y, w, h) in enumerate(faces):
+        # 원본 이미지에서 얼굴 부분 추출
+        face = image[y:y+h, x:x+w]
+        
+        # 새로운 파일 이름 생성
+        current_time = datetime.now().strftime("%Y%m%d%H%M%S")
+        new_filename = f"{current_time}{i}.jpg"
+        
+        # 얼굴 이미지 저장
+        output_path = os.path.join(output_directory, new_filename)
+        cv2.imwrite(output_path, face)
 
     return output_path
 
@@ -195,33 +260,29 @@ def process_and_save_image(image_path):
     grayscale_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     
     # 얼굴 검출
-    faces = face_cascade.detectMultiScale(grayscale_image, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+    faces = face_cascade.detectMultiScale(grayscale_image, scaleFactor=1.1, minNeighbors=5, minSize=(150,150))
     
     # output_path 변수 초기화
     output_path = None
     
-    if len(faces) == 0:
-        # 얼굴이 검출되지 않은 경우에는 output_path를 초기화하고 아무 작업도 수행하지 않습니다.
-        pass
-    else:
-        for i, (x, y, w, h) in enumerate(faces):
-            # 원본 이미지에서 얼굴 부분 추출
-            face = image[y:y+h, x:x+w]
-            
-            # 추출된 얼굴 이미지를 흑백으로 변환
-            grayscale_face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
-            
-            # 새로운 파일 이름 생성
-            current_time = datetime.now().strftime("%Y%m%d%H%M%S")
-            new_filename = f"{current_time}{i}.jpg"
-            
-            # 흑백 얼굴 이미지 저장
-            output_path = os.path.join(output_directory, new_filename)
-            cv2.imwrite(output_path, grayscale_face)
+    for i, (x, y, w, h) in enumerate(faces):
+        # 원본 이미지에서 얼굴 부분 추출
+        face = image[y:y+h, x:x+w]
+        
+        # 추출된 얼굴 이미지를 흑백으로 변환
+        grayscale_face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+        
+        # 새로운 파일 이름 생성
+        current_time = datetime.now().strftime("%Y%m%d%H%M%S")
+        new_filename = f"{current_time}{i}.jpg"
+        
+        # 흑백 얼굴 이미지 저장
+        output_path = os.path.join(output_directory, new_filename)
+        cv2.imwrite(output_path, grayscale_face)
 
-            send_bw_image_to_server2(output_path)
-    
+        send_bw_image_to_server2(output_path)
     return output_path
+  
 
 
 def send_bw_image_to_server2(image_path):
@@ -229,7 +290,7 @@ def send_bw_image_to_server2(image_path):
         files = {'image': (image_path, image_file)}
 
         # RESTful API 엔드포인트 및 데이터 설정
-        api_url = 'http://192.168.1.5:9097/receive_image'
+        api_url = 'http://192.168.1.11:9099/receive_image'
         payload = {'description': '흑백 이미지 설명'}
         
         # RESTful POST 요청 보내기
@@ -239,9 +300,6 @@ def send_bw_image_to_server2(image_path):
             print("흑백 이미지가 성공적으로 서버 2로 전송되었습니다.")
         else:
             print("흑백 이미지 전송 실패:", response.status_code)
-
-    # 이미지 파일을 명시적으로 닫습니다.
-    image_file.close()
 
 # 이미지를 다운로드할 로컬 경로 설정
 download_folder = '/home/KHM/HomeCamera_FaceOpenDoorLock/lock/static/image'
