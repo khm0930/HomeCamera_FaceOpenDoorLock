@@ -13,7 +13,7 @@ import RPi.GPIO as GPIO
 import signal  # 시그널 모듈을 임포트합니다.
 import firebase_admin
 from firebase_admin import credentials
-from firebase_admin import storage
+from firebase_admin import storage  
 from uuid import uuid4
 import schedule
 from datetime import datetime
@@ -131,15 +131,16 @@ def run_camera():
                 capture_file_path = os.path.join(capture_directory, f'{capture_time}.jpg')
                 cv2.imwrite(capture_file_path, frame)
                 time.sleep(capture_interval)
+                face_image_path = detect_faces(capture_file_path)
 
-                face_image_path=detect_faces(capture_file_path)
-                remote_path = f'image_store/lock_captures/{capture_time}.jpg'
-                upload_image_to_firebase(face_image_path,remote_path)
+                if face_image_path:  # 얼굴 검출이 제대로 되었을 때만 처리
+                    remote_path = f'image_store/lock_captures/{capture_time}.jpg'
+                    upload_image_to_firebase(face_image_path, remote_path)
 
-
-                bw_image_path = process_and_save_image(capture_file_path)#블랙으로 바꾸고 얼굴 검출
-                remote_path = f'image_store/lock_blackcaptures/{capture_time}.jpg'  # Firebase Cloud Storage에 업로드될 경로 및 파일 이름
-                upload_image_to_firebase(bw_image_path, remote_path)
+                    bw_image_path = process_and_save_image(capture_file_path)  # 블랙으로 바꾸고 얼굴 검출
+                    if bw_image_path:  # 얼굴 검출이 실패하지 않았을 때만 서버로 전송
+                        remote_path = f'image_store/lock_blackcaptures/{capture_time}.jpg'  # Firebase Cloud Storage에 업로드될 경로 및 파일 이름
+                        upload_image_to_firebase(bw_image_path, remote_path)
 
 
             # OpenCV 창에 비디오 스트림 표시
@@ -158,7 +159,6 @@ def run_camera():
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 face_cascade2 = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-    #입력사진 얼굴검출
 def detect_faces(image_path):
     # 이미지 불러오기
     image = cv2.imread(image_path)
@@ -166,21 +166,27 @@ def detect_faces(image_path):
     # 얼굴 검출
     faces = face_cascade2.detectMultiScale(image, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
     
-    for i, (x, y, w, h) in enumerate(faces):
-        # 원본 이미지에서 얼굴 부분 추출
-        face = image[y:y+h, x:x+w]
-        
-        # 새로운 파일 이름 생성
-        current_time = datetime.now().strftime("%Y%m%d%H%M%S")
-        new_filename = f"{current_time}{i}.jpg"
-        
-        # 얼굴 이미지 저장
-        output_path = os.path.join(output_directory, new_filename)
-        cv2.imwrite(output_path, face)
+    # output_path 변수 초기화
+    output_path = None
+    
+    if len(faces) == 0:
+        # 얼굴이 검출되지 않은 경우에는 output_path를 초기화하고 아무 작업도 수행하지 않습니다.
+        pass
+    else:
+        for i, (x, y, w, h) in enumerate(faces):
+            # 원본 이미지에서 얼굴 부분 추출
+            face = image[y:y+h, x:x+w]
+            
+            # 새로운 파일 이름 생성
+            current_time = datetime.now().strftime("%Y%m%d%H%M%S")
+            new_filename = f"{current_time}{i}.jpg"
+            
+            # 얼굴 이미지 저장
+            output_path = os.path.join(output_directory, new_filename)
+            cv2.imwrite(output_path, face)
 
     return output_path
 
-    #흑백으로 이미지 변환
 def process_and_save_image(image_path):
     # 이미지 불러오기
     image = cv2.imread(image_path)
@@ -191,31 +197,39 @@ def process_and_save_image(image_path):
     # 얼굴 검출
     faces = face_cascade.detectMultiScale(grayscale_image, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
     
-    for i, (x, y, w, h) in enumerate(faces):
-        # 원본 이미지에서 얼굴 부분 추출
-        face = image[y:y+h, x:x+w]
-        
-        # 추출된 얼굴 이미지를 흑백으로 변환
-        grayscale_face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
-        
-        # 새로운 파일 이름 생성
-        current_time = datetime.now().strftime("%Y%m%d%H%M%S")
-        new_filename = f"{current_time}{i}.jpg"
-        
-        # 흑백 얼굴 이미지 저장
-        output_path = os.path.join(output_directory, new_filename)
-        cv2.imwrite(output_path, grayscale_face)
+    # output_path 변수 초기화
+    output_path = None
+    
+    if len(faces) == 0:
+        # 얼굴이 검출되지 않은 경우에는 output_path를 초기화하고 아무 작업도 수행하지 않습니다.
+        pass
+    else:
+        for i, (x, y, w, h) in enumerate(faces):
+            # 원본 이미지에서 얼굴 부분 추출
+            face = image[y:y+h, x:x+w]
+            
+            # 추출된 얼굴 이미지를 흑백으로 변환
+            grayscale_face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+            
+            # 새로운 파일 이름 생성
+            current_time = datetime.now().strftime("%Y%m%d%H%M%S")
+            new_filename = f"{current_time}{i}.jpg"
+            
+            # 흑백 얼굴 이미지 저장
+            output_path = os.path.join(output_directory, new_filename)
+            cv2.imwrite(output_path, grayscale_face)
 
-        send_bw_image_to_server2(output_path)
+            send_bw_image_to_server2(output_path)
+    
     return output_path
 
+
 def send_bw_image_to_server2(image_path):
-    # 이미지 파일 열기
     with open(image_path, 'rb') as image_file:
         files = {'image': (image_path, image_file)}
 
         # RESTful API 엔드포인트 및 데이터 설정
-        api_url = 'http://192.168.1.11:9099/receive_image'
+        api_url = 'http://192.168.1.5:9097/receive_image'
         payload = {'description': '흑백 이미지 설명'}
         
         # RESTful POST 요청 보내기
@@ -225,6 +239,9 @@ def send_bw_image_to_server2(image_path):
             print("흑백 이미지가 성공적으로 서버 2로 전송되었습니다.")
         else:
             print("흑백 이미지 전송 실패:", response.status_code)
+
+    # 이미지 파일을 명시적으로 닫습니다.
+    image_file.close()
 
 # 이미지를 다운로드할 로컬 경로 설정
 download_folder = '/home/KHM/HomeCamera_FaceOpenDoorLock/lock/static/image'
@@ -274,4 +291,3 @@ if __name__ == '__main__':
     camera_thread.daemon = True
     camera_thread.start()
     app.run(host='0.0.0.0', port=9092)
-
